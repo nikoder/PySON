@@ -1,5 +1,21 @@
-# (C) Nikolaus Lieb 2013
-# First implementation of a parser for Python Sh**ty Object Notation (PySON).
+#
+#    Copyright (C) 2013  Nikolaus Lieb
+#
+#    This file is part of PySON, a parser for a simple Python object literal language.
+#
+#    PySON is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Lesser General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    PySON is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Lesser General Public License for more details.
+#
+#    You should have received a copy of the GNU Lesser General Public License
+#    along with PySON.  If not, see <http://www.gnu.org/licenses/>.
+#
 
 import ast
 
@@ -49,7 +65,7 @@ def _parseItem(lines, curIndent, curIndex):
     item, sep, tail = _multiTokenPartition(curLine, "=:")
     if   sep == "=": value           = ast.literal_eval(tail.strip()); curIndex += 1
     elif sep == ":": value, curIndex = _parseBlock(lines, curIndent, curIndex + 1)
-    else           : raise SyntaxError("Line no. %d is does not contain a valid assignment or block:\n%s" % (curIndex, lines[curIndex]))
+    else           : raise SyntaxError("Line no. %d does not contain a valid assignment or block:\n%s" % (curIndex, lines[curIndex]))
 
     return item.strip(), value, curIndex
 
