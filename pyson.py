@@ -1,3 +1,6 @@
+# (C) Nikolaus Lieb 2013
+# First implementation of a parser for Python Sh**ty Object Notation (PySON).
+
 import ast
 
 commentChar = "#"
@@ -50,4 +53,3 @@ def _parseItem(lines, curIndent, curIndex):
 
     return item.strip(), value, curIndex
 
-parse("base.pyon")
