@@ -60,13 +60,13 @@ def _parseItem(lines, curIndent, curIndex):
     curLine = curLine[len(curIndent):]
 
     # other lines must have valid indent...
-    if not _leadingWhitespace(curLine) == "": raise IndentationError("Bad indentation at line no. %d:\n%s" % (curIndex, lines[curIndex]))
+    if not _leadingWhitespace(curLine) == "": raise IndentationError("Bad indentation at line no. %d:\n%s" % (curIndex + 1, lines[curIndex]))
     
     # ...and must either assign a primitive to a name, or a compound object to a name
     item, sep, tail = _multiTokenPartition(curLine, "=:")
     if   sep == "=": value           = ast.literal_eval(tail.strip()); curIndex += 1
     elif sep == ":": value, curIndex = _parseBlock(lines, curIndent, curIndex + 1)
-    else           : raise SyntaxError("Line no. %d does not contain a valid assignment or block:\n%s" % (curIndex, lines[curIndex]))
+    else           : raise SyntaxError("Line no. %d does not contain a valid assignment or block:\n%s" % (curIndex + 1, lines[curIndex]))
 
     return item.strip(), value, curIndex
 
