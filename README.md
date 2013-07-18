@@ -81,6 +81,8 @@ The optional `delname` argument can be used to remove unwanted name polution (su
 
 `PysonBunch` objects support conversion back to valid PySON strings, via `__repr__`. Calling `repr` on a `PysonBunch` will only produce a representation of the values contained **within** the bunch, since the bunch does not know its own name. To get a full representation of the named bunch, you can use the helper method `namedPysonBunchRepr(name, bunch)`.
 
-#### Limitation
+#### Limitations
 
 Almost any valid PySON object can be represented by a `PysonBunch`. The only exception are names which match special Python magic functions (such as `__getattr__`). Using these as attributes on a PySON object will produce various fun and unexpected results.
+
+Comments are not presently preserved, when parsing PySON into `PysonBunch`es. So, while `repr` on a bunch produces pretty formatted output, it is not yet suitable for re-writing user files, as their comments would be lost.
