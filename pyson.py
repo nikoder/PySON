@@ -55,8 +55,9 @@ def _parseItem(lines, curIndent, curIndex):
                 if item is not None: obj.__dict__[item] = value
         return obj, curIndex
     
-    curLine = lines[curIndex][len(curIndent):]
+    curLine = lines[curIndex]
     if isIgnoredLine(curLine): return None, None, curIndex + 1
+    curLine = curLine[len(curIndent):]
 
     # other lines must have valid indent...
     if not _leadingWhitespace(curLine) == "": raise IndentationError("Bad indentation at line no. %d:\n%s" % (curIndex, lines[curIndex]))
