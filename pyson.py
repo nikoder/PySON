@@ -39,9 +39,9 @@ class PysonBunch(object):
         Since an object usually doesn't know the name it is stored under, a bunch settles for just returning a valid PySON representation of the set of its constituents. For creating a repr of a named PySON bunch use pyson.namedPysonBunchRepr(name, bunch)."""
         if len(self) == 0: return ""
         lines = []
-        maxKeyLen = max([len(key) for key in self])
+        maxKeyLen = max([0] + [len(key) for key in self if not isinstance(self[key], self.__class__)])
         for key, val in iteritems(self.__dict__):
-            if not isinstance(val, PysonBunch):
+            if not isinstance(val, self.__class__):
                 padding = " " * (maxKeyLen + 1 - len(key))
                 lines.append(key + padding  + assignmentChar + " " + repr(val))
             else:
