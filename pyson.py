@@ -17,7 +17,7 @@
 #    along with PySON.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import ast, copy
+import ast, copy, itertools
 
 # python 2/3 compatibility helper
 def iteritems(dictionary): return getattr(dictionary, "iteritems", dictionary.items)()
@@ -51,7 +51,18 @@ class PysonBunch(object):
     def __mergedDeepCopy__(self, *args):
         """return a deep copy of this bunch, which has been updated with deep copies of any further given bunches"""
         res = PysonBunch()
-        for item in (self,) + args: res.__dict__.update(copy.deepcopy(item.__dict__))
+        allBunches = (self,) + args
+        allKeys    = set(itertools.chain(*(bunch.__dict__.keys() for bunch in allBunches)))
+        for key in allKeys:
+            allDefinitions = tuple(bunch[key] for bunch in allBunches if key in bunch)
+            if isinstance(allDefinitions[-1], self.__class__): # if the final (dominating) definition is a bunch, we want to merge it with any relevant preceding bunch definitions (i.e. ones which would not have been overriden by a non-bunch object)
+                allMergeableDefinitions = []
+                for definition in reversed(allDefinitions):
+                    if isinstance(definition, self.__class__): allMergeableDefinitions.insert(0, definition)
+                    else                                     : break
+                res.__dict__[key] = allMergeableDefinitions[0].__mergedDeepCopy__(*allMergeableDefinitions[1:])
+            else:
+                res.__dict__[key] = copy.deepcopy(allDefinitions[-1])
         return res
 
     #a bunch may as well behave like the underlying dict, in most situations
