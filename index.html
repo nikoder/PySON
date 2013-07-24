@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Pyson : A simple parser for the simple Python Sh**ty Object Notation (PySON)." />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Pyson</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/nikoder/PySON">View on GitHub</a>
+
+          <h1 id="project_title">Pyson</h1>
+          <h2 id="project_tagline">A simple parser for the simple Python Sh**ty Object Notation (PySON).</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/nikoder/PySON/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/nikoder/PySON/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="pyson" class="anchor" href="#pyson"><span class="octicon octicon-link"></span></a>PySON</h1>
+
+<p>A simple parser for the simple Python Sh**ty Object Notation (PySON). (Tested on both Python 2.7 and Python 3.3.)</p>
+
+<h2>
+<a name="about-the-pyson-syntax" class="anchor" href="#about-the-pyson-syntax"><span class="octicon octicon-link"></span></a>About The PySON Syntax</h2>
+
+<p>The intent of PySON is to provide a simple way of writing literals of Python objects.</p>
+
+<p>Of course, it is possible to create Python objects in Python itself, but PySON has 3 advantages (in the eyes of the author):</p>
+
+<ul>
+<li>PySON is less verbose (making it easier to write)</li>
+<li>PySON is more easily readable</li>
+<li>Since PySON is not an executable format it is slightly safer.</li>
+</ul><p>The main application of PySON is seen in writing simple Pythonic config files.</p>
+
+<p>PySON files are expected to use the extension ".pyson"</p>
+
+<h3>
+<a name="pyson-rules" class="anchor" href="#pyson-rules"><span class="octicon octicon-link"></span></a>PySON Rules</h3>
+
+<ul>
+<li>Comments and whitespace work like they do in Python</li>
+<li>All standard Python literals for primitive values are supported (based on Python's <code>ast</code>)</li>
+<li>Objects are defined by specifying the objects name, followed by a colon</li>
+<li>Indentation is used to create a block of values belonging to an object</li>
+</ul><h3>
+<a name="example-pyson-file" class="anchor" href="#example-pyson-file"><span class="octicon octicon-link"></span></a>Example PySON File</h3>
+
+<div class="highlight"><pre><span class="c"># I have something worthwhile to say</span>
+
+<span class="n">object1</span><span class="p">:</span>                       <span class="c"># I just wanted to make a note about this object</span>
+    <span class="n">int1</span>    <span class="o">=</span> <span class="mi">1</span>                <span class="c"># Well, *I* have something to say about this variable</span>
+    <span class="n">float1</span>  <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">string1</span> <span class="o">=</span> <span class="s">"I am a string."</span>
+    <span class="n">list1</span>   <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s">"I am a string inside a list"</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)]]</span>
+
+    <span class="n">subObject1</span><span class="p">:</span>
+        <span class="n">int1</span>     <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">float1</span>   <span class="o">=</span> <span class="mf">1.0</span>
+<span class="c">#       disabled = "I am a disabled variable"</span>
+        <span class="n">string1</span>  <span class="o">=</span> <span class="s">"I am another string belonging to subObject1."</span>
+
+<span class="n">rootLvlObj</span> <span class="o">=</span> <span class="p">{</span><span class="s">"a"</span> <span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">"b"</span> <span class="p">:</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">),(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)]}</span> <span class="c"># Primitives can live on the root level as well, of course.</span>
+</pre></div>
+
+<p>If this file is parsed into the name <code>pysonData</code>, you can access the values, such as:</p>
+
+<div class="highlight"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">pysonData</span><span class="o">.</span><span class="n">object1</span><span class="o">.</span><span class="n">int1</span>
+<span class="mi">1</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">pysonData</span><span class="o">.</span><span class="n">object1</span><span class="o">.</span><span class="n">subObject1</span><span class="o">.</span><span class="n">float1</span>
+<span class="mf">1.0</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">pysonData</span><span class="o">.</span><span class="n">rootLvlObj</span>
+<span class="p">{</span><span class="s">'a'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">'b'</span><span class="p">:</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)]}</span>
+</pre></div>
+
+<h2>
+<a name="pyson-parser-and-importer" class="anchor" href="#pyson-parser-and-importer"><span class="octicon octicon-link"></span></a>PySON Parser and Importer</h2>
+
+<p>This implementation offers a simple parser for PySON. You can use it to parse PySON from strings, files, or whole directory trees.</p>
+
+<p>The parser returns instances of <code>PysonBunch</code> for every object defined in PySON. <a href="#bunchinfo">See below</a> for details on <code>PysonBunch</code> objects.</p>
+
+<p>When parsing from a directory tree, the file and directory structure becomes a corresponding tree of PySON bunch objects. Only *.pyson files are parsed.</p>
+
+<p>This implementation also offers a PySON importer, which allows you to import any name from within a tree of PySON objects.</p>
+
+<p>This is particularly useful if you just want to turn a directory structure of PySON data into something you can freely import from. To achieve this, you can make the root of the tree a Python package, with the following contents in the <code>__init__.py</code>:</p>
+
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">PySON</span><span class="p">;</span> <span class="n">PySON</span><span class="o">.</span><span class="n">convertToPysonRootPackage</span><span class="p">(</span><span class="nb">globals</span><span class="p">(),</span> <span class="n">delname</span> <span class="o">=</span> <span class="s">"PySON"</span><span class="p">)</span>
+</pre></div>
+
+<p>The optional <code>delname</code> argument can be used to remove unwanted name polution (such as the import of PySON) from the tree, before populating it with the parsed PySON data.</p>
+
+<h3>
+<a name="-pysonbunch-objects" class="anchor" href="#-pysonbunch-objects"><span class="octicon octicon-link"></span></a><a name="bunchinfo"></a> <code>PysonBunch</code> Objects</h3>
+
+<p><code>PysonBunch</code> objects behave very much like dicts and support most of their built-in operations (such as indexing and <code>in</code> tests), but the names stored in them are, of course, also accessible via <code>getattr()</code> and the <code>.</code> operator.</p>
+
+<p><code>PysonBunch</code> objects support conversion back to valid PySON strings, via <code>__repr__</code>. Calling <code>repr</code> on a <code>PysonBunch</code> will only produce a representation of the values contained <strong>within</strong> the bunch, since the bunch does not know its own name. To get a full representation of the named bunch, you can use the helper method <code>namedPysonBunchRepr(name, bunch)</code>.</p>
+
+<h4>
+<a name="limitations" class="anchor" href="#limitations"><span class="octicon octicon-link"></span></a>Limitations</h4>
+
+<p>Almost any valid PySON object can be represented by a <code>PysonBunch</code>. The only exception are names which match special Python magic functions (such as <code>__getattr__</code>). Using these as attributes on a PySON object will produce various fun and unexpected results.</p>
+
+<p>Comments are not presently preserved, when parsing PySON into <code>PysonBunch</code>es. So, while <code>repr</code> on a bunch produces pretty formatted output, it is not yet suitable for re-writing user files, as their comments would be lost.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Pyson maintained by <a href="https://github.com/nikoder">nikoder</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
