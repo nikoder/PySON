@@ -79,7 +79,7 @@ The optional `delname` argument can be used to remove unwanted name polution (su
 
 `PysonBunch` objects behave very much like dicts and support most of their built-in operations (such as indexing and `in` tests), but the names stored in them are, of course, also accessible via `getattr()` and the `.` operator.
 
-`PysonBunch` objects support conversion back to valid PySON strings, via `__repr__`. Calling `repr` on a `PysonBunch` will only produce a representation of the values contained **within** the bunch, since the bunch does not know its own name. To get a full representation of the named bunch, you can use the helper method `namedPysonBunchRepr(name, bunch)`.
+`PysonBunch` objects support conversion back to valid PySON strings, via `__repr__`. Calling `repr` on a `PysonBunch` will only produce a representation of the values contained **within** the bunch, since the bunch does not know its own name. To get a full representation of the named bunch, you can use the helper method `namedBunchRepr(name, bunch)`.
 
 #### Limitations
 

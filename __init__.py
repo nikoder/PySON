@@ -19,5 +19,5 @@
 
 # The present purpose of this file is simply to allow using PySON as a file or a package interchangeably. TODO: Only export things that should be part of the interface.
 
-from .pyson import namedPysonBunchRepr, PysonBunch, parseDir, parseFile, parse
+from .pyson import namedBunchRepr, PysonBunch, parseDir, parseFile, parse
 from .importer import registerPysonImportRoot, convertToPysonRootPackage
