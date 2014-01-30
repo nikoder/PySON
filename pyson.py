@@ -17,7 +17,7 @@
 #    along with PySON.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import ast, copy, itertools, inspect
+import ast, copy, itertools
 
 # python 2/3 compatibility helper
 def iteritems(dictionary): return getattr(dictionary, "iteritems", dictionary.items)()
@@ -29,6 +29,7 @@ assignmentChar   = "="
 blockChar        = ":"
 pysonExtension   = ".pyson"
 DefaultBunchType = "PysonBunch"
+bunchAttrPrefix  = ""
 
 def _bunchRepr(bunchDict, *args, **kwargs): # not in the class hierarchy, just to avoid name pollution
     lines = []
@@ -60,7 +61,7 @@ def bunchMergedDeepCopy(*allBunches):
             setattr(res, key, copy.deepcopy(allDefinitions[-1]))
     return res
 
-PysonBunchConvenienceMethods = {"mergedDeepCopy" : bunchMergedDeepCopy,
+pysonBunchConvenienceMethods = {"mergedDeepCopy" : bunchMergedDeepCopy,
                                 "namedRepr"      : namedBunchRepr,
                                 }
 
@@ -76,23 +77,42 @@ class BaseBunch(object):
     WARNING: vulnerable to collisions with anything that is part of a basic python object"""
     def __repr__(self, *args, **kwargs): return _bunchRepr(self.__dict__, *args, **kwargs)
 
-class SimplePysonBunch(BaseBunch, dict):
+def _attributeAugmentedClass(clsName, clsParents, clsAttrs, additionalAttrDict):
+    mergedAttrs = clsAttrs.copy()
+    mergedAttrs.update(additionalAttrDict)
+    return (clsName, clsParents, mergedAttrs)
+
+def _dictRedirectClass(clsName, clsParents, clsAttrs):
+    sample = dict()
+    for attr in dir(sample):
+        if callable(getattr(sample, attr)) and attr not in ["__class__", "__new__", "__init__", "__setattr__", "__getattribute__", "__delattr__", "__repr__", "__reduce__", "__reduce_ex__", "__subclasshook__"]:
+            print attr
+            def dictRedirector(methodName):
+                def dictRedirector_inner(clientSelf, *args, **kwargs): return getattr(clientSelf.__dict__, methodName)(*args, **kwargs)
+                return dictRedirector_inner
+            clsAttrs[attr] = dictRedirector(attr)
+    return clsName, clsParents, clsAttrs
+
+def _prefixedAttrClass(clsName, clsParents, clsAttrs, prefix): return clsName, clsParents, {name if name.startswith("__") else prefix + name: val for name, val in iteritems(clsAttrs)}
+
+def _multiMeta(*modifiers):
+    def multiMeta_inner(clsName, clsParents, clsAttrs):
+        for mod in modifiers:
+            fun, args, kwargs = mod[0], mod[1] if len(mod) > 1 else [], mod[2] if len(mod) > 2 else {}
+            clsName, clsParents, clsAttrs = fun(clsName, clsParents, clsAttrs, *args, **kwargs)
+        return type(clsName, clsParents, clsAttrs)
+    return multiMeta_inner
+
+class PysonBunch(BaseBunch):
+    __metaclass__ = _multiMeta((_dictRedirectClass,), (_attributeAugmentedClass, [pysonBunchConvenienceMethods]), (_prefixedAttrClass, [bunchAttrPrefix]))
     """A safe PySON bunch type. Supports a dict interface, as well as object style "." lookup. Simply use the dict interface to access anything that would collide with built-in object or dict attributes.
     
     Run "dir(type("test", (dict), {})())" to get a list of these names, in your python version."""
-    def __repr__(self, *args, **kwargs): return _bunchRepr(self, *args, **kwargs)
-    def __setattr__(self, name, value):        self[name] = value
-    def __getattr__(self, name       ): return self[name]
+#    def __repr__(self, *args, **kwargs): return _bunchRepr(self, *args, **kwargs)
+#    def __setattr__(self, name, value):        self[name] = value
+#    def __getattr__(self, name       ): return self[name]
+    def __getattribute__(self, name): print name; return super(PysonBunch, self). __getattribute__(name)
 
-def attributeAugmentedClass(additionalAttrDict):
-    def attributeAugmentedClass_inner(clsName, clsParents, clsAttrs):
-        mergedAttrs = clsAttrs.copy()
-        mergedAttrs.update(additionalAttrDict)
-        return type(clsName, clsParents, mergedAttrs)
-    return attributeAugmentedClass_inner
-
-class PysonBunch(BaseBunch, dict):#SimplePysonBunch, dict):
-    __metaclass__ = attributeAugmentedClass(PysonBunchConvenienceMethods)
 
 def parseDir(dirp, useBunchType = None):
     import os
