@@ -28,28 +28,21 @@ commentChar      = "#"
 assignmentChar   = "="
 blockChar        = ":"
 pysonExtension   = ".pyson"
+DefaultBunchType = "PysonBunch"
 
-def bunchRepr(bunch, *args, **kwargs):
-    """Returns a valid PySON representation of the given bunch object.
-    
-    Since an object usually doesn't know the name it is stored under, a bunch settles for just returning a valid PySON representation of the set of its constituents. For creating a repr of any kind of named PySON bunch use namedBunchRepr(name, bunch)."""
-    print "boing"
-    if len(bunch...) == 0: return ""
-    print "boing"
+def _bunchRepr(bunchDict, *args, **kwargs): # not in the class hierarchy, just to avoid name pollution
     lines = []
-    maxKeyLen = max([0] + [len(key) for key in bunch if not isinstance(bunch[key], BaseBunch)])
-    for key, val in iteritems(bunch...):
+    maxKeyLen = max([0] + [len(key) for key in bunchDict if not isinstance(bunchDict[key], BaseBunch)])
+    for key, val in iteritems(bunchDict):
         if not isinstance(val, BaseBunch):
             padding = " " * (maxKeyLen + 1 - len(key))
             lines.append(key + padding  + assignmentChar + " " + repr(val, *args, **kwargs))
         else:
-            lines.append(namedBunchRepr(key, val, *args, **kwargs))
+            lines.append(namedBunchRepr(val, key, *args, **kwargs))
     return "\n".join(sorted(lines))
 
-def namedBunchRepr(name, bunch, *args, **kwargs):
-    return name + blockChar + ("" if len(bunch) == 0 else "\n" + defaultBunchIndent + repr(bunch, *args, **kwargs).replace("\n", "\n" + defaultBunchIndent))
-
-def bunchRepr
+def namedBunchRepr(bunch, name, *args, **kwargs):
+    return "\n".join([name + blockChar] + [defaultBunchIndent + line for line in repr(bunch, *args, **kwargs).split("\n")])
 
 def bunchMergedDeepCopy(*allBunches):
     """return a deep copy of the first given bunch, which has been updated (overwriting any existing contents) with deep copies of any further given bunches. Returned bunch type is determined by the first argument."""
@@ -61,63 +54,45 @@ def bunchMergedDeepCopy(*allBunches):
             allMergeableDefinitions = []
             for definition in reversed(allDefinitions):
                 if isinstance(definition, BaseBunch): allMergeableDefinitions.insert(0, definition)
-                else                                     : break
+                else                                : break
             setattr(res, key, allMergeableDefinitions[0].__mergedDeepCopy__(*allMergeableDefinitions[1:]))
         else:
             setattr(res, key, copy.deepcopy(allDefinitions[-1]))
     return res
 
-def bunchIterItems(self): return iteritems(self)
+PysonBunchConvenienceMethods = {"mergedDeepCopy" : bunchMergedDeepCopy,
+                                "namedRepr"      : namedBunchRepr,
+                                }
 
-class BaseBunch(object): pass #FIXME: Base type is misleading. They won't support the same interface (at least for now: no way to "list" the keys in a SimplePysonBunch).
-class SimplePysonBunch(BaseBunch):
+class BaseBunch(object):
     """Use this if you *really* want to avoid name collisions between entries in the raw PySON code and names belonging to the bunch object.
     
-    WARNINGS:
-        * still vulnerable to collisions with anything that is part of a basic python object
-        * does not support any convenience, such as using repr(SimplePysonBunch) to get a PySON string representation of the object
+    The advantage of BaseBunch over PysonBunch is that there are fewer name collisions possible. The disadvantage is that, besides offering less convenience, these objects may *break* if there is a name collision.
     
-    Where possible, it is recommended to use PysonBunch and simply avoid the use of the following names in PySON definitions:
-        * anything that is a part of basic python objects
-        * anything that is a part of python dict objects
-        * anything that is listed in PysonBunchConvenienceMethods above"""
+    Note that it is recommended to just use PysonBunch and access colliding names via dict-style [] indexing instead of object-style . lookup.
+    
+    Run "dir(type("test", (object,), {})())" to get a list of these names, in your python version.
+    
+    WARNING: vulnerable to collisions with anything that is part of a basic python object"""
+    def __repr__(self, *args, **kwargs): return _bunchRepr(self.__dict__, *args, **kwargs)
 
-#def dictMerged(future_class_name, future_class_parents, future_class_attr):
-#    mergedAttrs = future_class_attr.copy()
-#    class dum(object): pass
-#    sample = dum().__dict__
-#    for name in dir(sample):
-#        if name not in mergedAttrs:
-#            if inspect.isbuiltin(getattr(sample, name)):
-#                def dictRedirect(*args, **kwargs): getattr(args[0].__dict__, name)(*args[1:], **kwargs)
-#                mergedAttrs[name] = dictRedirect
-#    return type(future_class_name, future_class_parents, mergedAttrs)
-def attributeAugmentedClass(additionalAttributes):
-    def attributeAugmentedClass_inner(futureClsName, futureClsParents, futureClsAttrs):
-        mergedAttrs = futureClsAttrs.copy()
-        mergedAttrs.update(additionalAttributes)
-        return type(futureClsName, futureClsParents, mergedAttrs)
+class SimplePysonBunch(BaseBunch, dict):
+    """A safe PySON bunch type. Supports a dict interface, as well as object style "." lookup. Simply use the dict interface to access anything that would collide with built-in object or dict attributes.
+    
+    Run "dir(type("test", (dict), {})())" to get a list of these names, in your python version."""
+    def __repr__(self, *args, **kwargs): return _bunchRepr(self, *args, **kwargs)
+    def __setattr__(self, name, value):        self[name] = value
+    def __getattr__(self, name       ): return self[name]
+
+def attributeAugmentedClass(additionalAttrDict):
+    def attributeAugmentedClass_inner(clsName, clsParents, clsAttrs):
+        mergedAttrs = clsAttrs.copy()
+        mergedAttrs.update(additionalAttrDict)
+        return type(clsName, clsParents, mergedAttrs)
     return attributeAugmentedClass_inner
 
 class PysonBunch(BaseBunch, dict):#SimplePysonBunch, dict):
     __metaclass__ = attributeAugmentedClass(PysonBunchConvenienceMethods)
-#    def __repr__(self): pass
-#    def __getattribute__(self, name):
-#        print name
-#        supergetattr = super(PysonBunch, self).__getattribute__ #probably going to effectively map to object.__getattribute__, but may not
-#        selfdict = supergetattr("__dict__")
-#        if name == "__getattribute__": return supergetattr(name) #faithfully return ourselves, if asked
-#        elif name in PysonBunchConvenienceMethods: #bunch convenience methods take priority over any other features
-#            unboundMethod = PysonBunchConvenienceMethods[name]
-#            def fakeBound(*args, **kwargs): return unboundMethod(self, *args, **kwargs)
-#            return fakeBound
-#        else:
-#            try: return supergetattr(name) #in any other case, fall back to default getattr behaviour
-#            except AttributeError as e:
-##                if hasattr(selfdict, name): return getattr(selfdict, name)  #if we are trying to use a feature supported by dictionaries, we support this by calling the method on the underlying __dict__, which PySON exclusively uses to store any bunch's members
-#                raise e
-    def __setattr__(self, name, value):        self[name] = value
-    def __getattr__(self, name       ): return self[name]
 
 def parseDir(dirp, useBunchType = None):
     import os
@@ -180,7 +155,4 @@ def _parseItem(lines, curIndent, curIndex, bunchType):
 
     return item.strip(), value, curIndex
 
-DefaultBunchType = PysonBunch
-PysonBunchConvenienceMethods = {"__repr__"       : bunchRepr,
-                                "mergedDeepCopy" : bunchMergedDeepCopy,
-                                }
+DefaultBunchType = globals()[DefaultBunchType]
