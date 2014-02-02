@@ -79,10 +79,10 @@ The optional `delname` argument can be used to remove unwanted name polution (su
 
 `PysonBunch` objects behave very much like dicts and support most of their built-in operations (such as indexing and `in` tests), but the names stored in them are, of course, also accessible via `getattr()` and the `.` operator.
 
-`PysonBunch` objects support conversion back to valid PySON strings, via `__repr__`. Calling `repr` on a `PysonBunch` will only produce a representation of the values contained **within** the bunch, since the bunch does not know its own name. To get a full representation of the named bunch, you can use the helper method `namedPysonBunchRepr(name, bunch)`.
+`PysonBunch` objects support conversion back to valid PySON strings, via `__repr__`. Calling `repr` on a `PysonBunch` will only produce a representation of the values contained **within** the bunch, since the bunch does not know its own name. To get a full representation of the named bunch, you can use the helper method `namedBunchRepr(name, bunch)`.
 
 #### Limitations
 
-Almost any valid PySON object can be represented by a `PysonBunch`. The only exception are names which match special Python magic functions (such as `__getattr__`). Using these as attributes on a PySON object will produce various fun and unexpected results.
+Almost any valid PySON object can be represented by a `PysonBunch`. The only exception are names which match special Python magic functions (such as `__getattr__`). Interestingly, due to cpython optisations, it appears that such name collisions do not affect the interpreter, while still providing any user values to user code. This may not be true for all cases, and, especially for other execution platforms besides cpython, however. Yet all "better" solutions increase code complexity and verbosity to such an extent, that they are not currently deemed worthwhile. If you do run into problems due to this decision, please feel free to raise an issue on github.
 
 Comments are not presently preserved, when parsing PySON into `PysonBunch`es. So, while `repr` on a bunch produces pretty formatted output, it is not yet suitable for re-writing user files, as their comments would be lost.
