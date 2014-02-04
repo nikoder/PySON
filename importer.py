@@ -40,7 +40,11 @@ class NameTreeImporter(_NameTreeImporterParent):
     def find_module(self, fullname, path = None):
         if not fullname.startswith(self._getRootMod()): return None
         if     fullname ==         self._getRootMod() : return None # We do not import the root object itself
-        return self
+        try: # needed to avoid non-PySON imports breaking for code located within a PySON tree and running on python 2
+            self.load_module(fullname)
+            return self
+        except ImportError:
+            return None
     
     def load_module(self, fullname):
         parentPkgName, dummy, modName = fullname.rpartition(".")
