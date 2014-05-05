@@ -51,9 +51,9 @@ class NameTreeImporter(_NameTreeImporterParent):
         if parentPkgName not in sys.modules: raise ImportError("Parent '%s' of '%s' not properly imported." % (parentPkgName, modName))
         parentPkg = sys.modules[parentPkgName]
         if not hasattr(parentPkg, modName): raise ImportError("Name '%s' does not exist at PySON path '%s'." % (modName, parentPkgName))
-        return self._modulise(getattr(parentPkg, modName), fullname)
+        return self._modulise(getattr(parentPkg, modName), fullname, parentPkgName)
 
-    def _modulise(self, obj, fullname):
+    def _modulise(self, obj, fullname, parentPkgName):
         import imp
         mod = sys.modules.setdefault(fullname, imp.new_module(fullname))
         mod.__file__   = None if self._getRootPath() is None else "<somewhere in %s>" % self._getRootPath()
